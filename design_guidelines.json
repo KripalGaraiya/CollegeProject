@@ -1,0 +1,181 @@
+{
+  "project_name": "Shri B. G. Garaiya Homoeopathic Medical College System",
+  "design_system": {
+    "name": "Aura",
+    "theme_strategy": "Medical Professional with Natural Warmth",
+    "emotional_archetype": "Organic & Earthy (Trust, Growth, Calm)",
+    "typography": {
+      "headings": {
+        "font_family": "Manrope",
+        "weights": ["600", "700"],
+        "usage": "Page titles, Card headers, Section headings",
+        "description": "Modern, legible, slightly humanist sans-serif that balances medical precision with approachability."
+      },
+      "body": {
+        "font_family": "Inter",
+        "weights": ["400", "500"],
+        "usage": "Data tables, Form inputs, General text",
+        "description": "Standard geometric sans for maximum legibility in dense data environments."
+      },
+      "mono": {
+        "font_family": "JetBrains Mono",
+        "usage": "ID numbers, Codes, System logs"
+      }
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "DEFAULT": "#4A6C58",
+          "foreground": "#FFFFFF",
+          "hover": "#3A5545",
+          "active": "#2B3F33",
+          "description": "Deep Sage Green - Represents Homeopathy, Nature, and Healing."
+        },
+        "secondary": {
+          "DEFAULT": "#2C3E50",
+          "foreground": "#FFFFFF",
+          "description": "Dark Slate Blue - Represents Administrative Authority and Professionalism."
+        },
+        "accent": {
+          "DEFAULT": "#D97706",
+          "foreground": "#FFFFFF",
+          "description": "Muted Amber - Used for high-priority alerts or call-to-actions without being aggressive."
+        },
+        "background": {
+          "DEFAULT": "#F8F9FA",
+          "paper": "#FFFFFF",
+          "sidebar": "#FFFFFF"
+        },
+        "text": {
+          "primary": "#1F2937",
+          "secondary": "#6B7280",
+          "muted": "#9CA3AF"
+        },
+        "status": {
+          "success": "#10B981",
+          "warning": "#F59E0B",
+          "error": "#EF4444",
+          "info": "#3B82F6"
+        }
+      },
+      "contrast_rules": {
+        "text_on_primary": "Must be #FFFFFF",
+        "text_on_background": "Must be #1F2937 or darker",
+        "interactive_elements": "Minimum 3:1 contrast ratio against background"
+      }
+    },
+    "spacing": {
+      "scale": "tailwind",
+      "base_padding": "p-6",
+      "card_padding": "p-6",
+      "section_gap": "gap-8",
+      "grid_gap": "gap-6"
+    },
+    "borders": {
+      "radius": {
+        "default": "rounded-lg",
+        "card": "rounded-xl",
+        "button": "rounded-md",
+        "input": "rounded-md"
+      },
+      "width": {
+        "default": "border",
+        "active": "border-2"
+      },
+      "color": "border-gray-200"
+    },
+    "shadows": {
+      "card": "shadow-sm hover:shadow-md transition-shadow duration-200",
+      "dropdown": "shadow-lg",
+      "modal": "shadow-xl"
+    }
+  },
+  "layout_strategies": {
+    "dashboard": {
+      "type": "Bento Grid",
+      "structure": "Sidebar Navigation + Top Header + Main Content Area",
+      "grid_cols": "grid-cols-1 md:grid-cols-12",
+      "gap": "gap-6",
+      "rules": [
+        "Sidebar fixed on desktop, drawer on mobile",
+        "Header sticky with blur effect",
+        "Content area max-width 1600px centered"
+      ]
+    },
+    "mobile_app": {
+      "navigation": "Bottom Tab Bar",
+      "header": "Clean, minimal with back button and page title",
+      "content": "Card-based vertical scroll",
+      "constraints": "Touch targets minimum 44px height"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/90",
+      "outline": "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+      "ghost": "hover:bg-accent hover:text-accent-foreground"
+    },
+    "cards": {
+      "default": "bg-white rounded-xl border border-gray-100 shadow-sm p-6",
+      "interactive": "cursor-pointer hover:border-primary/20 transition-colors"
+    },
+    "inputs": {
+      "default": "h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    "tables": {
+      "style": "clean",
+      "header": "bg-gray-50/50 text-xs font-semibold uppercase tracking-wider text-gray-500",
+      "row": "border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
+    }
+  },
+  "role_specific_guides": {
+    "principal": {
+      "theme": "Executive & Data-Dense",
+      "key_features": ["High-level stats", "Department oversight", "Approval queues"],
+      "layout_mode": "High Density Dashboard"
+    },
+    "teacher": {
+      "theme": "Functional & Task-Oriented",
+      "key_features": ["Attendance marking (Grid)", "Result entry (Table)", "Leave application"],
+      "layout_mode": "Task Focused"
+    },
+    "student": {
+      "theme": "Visual & Personal",
+      "key_features": ["Profile cards", "Result visualization (Charts)", "Notice board (Feed)"],
+      "layout_mode": "Mobile-First Card View"
+    }
+  },
+  "assets": {
+    "images": [
+      {
+        "category": "background_texture",
+        "url": "https://images.unsplash.com/photo-1528272252360-5efd274e36fb",
+        "description": "Assorted homeopathic bottles, use for subtle overlays or login background",
+        "usage": "Login Page Background (with heavy overlay)"
+      },
+      {
+        "category": "academic_life",
+        "url": "https://images.unsplash.com/photo-1722573783625-eceb04251036",
+        "description": "Students in classroom/lab setting",
+        "usage": "Landing Page, Student Portal Header"
+      },
+      {
+        "category": "campus",
+        "url": "https://images.unsplash.com/photo-1680084521631-e4e6d77704d8",
+        "description": "Institutional building exterior",
+        "usage": "About Us, Dashboard Welcome Banner"
+      }
+    ],
+    "icons": "Lucide React (Default)"
+  },
+  "universal_guidelines": [
+    "Do not use gradients for main backgrounds; use solid colors or subtle noise textures.",
+    "Ensure all text meets WCAG AA contrast standards.",
+    "Use 'data-testid' on all interactive elements.",
+    "Avoid generic 'teal' (#1B93A4) as per anti-patterns.",
+    "Use 'Sonner' for toast notifications.",
+    "Mobile views must utilize a bottom navigation bar for main sections.",
+    "Forms must use Shadcn 'Form' components with Zod validation."
+  ]
+}
