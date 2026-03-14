@@ -1,0 +1,4 @@
+/* Additional custom styles */
+.gradient-bg {
+  background: linear-gradient(135deg, #4A6C58 0%, #2C3E50 100%);
+}
