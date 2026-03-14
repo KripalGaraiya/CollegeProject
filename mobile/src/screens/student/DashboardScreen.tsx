@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,20 +6,22 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import { dashboardAPI, teacherAPI } from '../../services/api';
-import { StudentDashboard as StudentDashboardType, Teacher } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
+import { dashboardAPI, teacherAPI } from '../../services/api';
+import { Card, Badge, Loading, EmptyState } from '../../components';
+import { COLORS, FONTS, SPACING, RADIUS } from '../../constants';
+import { StudentDashboard, Teacher } from '../../types';
 
 const DashboardScreen: React.FC = () => {
   const { user, logout } = useAuth();
-  const [data, setData] = useState<StudentDashboardType | null>(null);
+  const [data, setData] = useState<StudentDashboard | null>(null);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [dashRes, teachersRes] = await Promise.all([
         dashboardAPI.getStudent(),
@@ -28,39 +30,43 @@ const DashboardScreen: React.FC = () => {
       setData(dashRes);
       setTeachers(teachersRes);
     } catch (error) {
-      console.error('Failed to fetch dashboard data', error);
+      console.error('Dashboard fetch error:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchData();
   };
 
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: logout },
+    ]);
+  };
+
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
-      </View>
-    );
+    return <Loading />;
   }
 
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.accent} />}
     >
       {/* Profile Header */}
       <View style={styles.profileHeader}>
         <View style={styles.profileIcon}>
-          <Icon name="user" size={40} color="#fff" />
+          <Text style={styles.profileEmoji}>👨‍🎓</Text>
         </View>
         <View style={styles.profileInfo}>
           <Text style={styles.profileName}>{data?.student?.name || user?.name}</Text>
@@ -75,64 +81,53 @@ const DashboardScreen: React.FC = () => {
 
       {/* Quick Stats */}
       <View style={styles.statsRow}>
-        {/* Attendance */}
         <View style={styles.statCard}>
-          <View style={[styles.statIconBg, { backgroundColor: '#D1FAE5' }]}>
-            <Icon name="clipboard" size={20} color="#059669" />
-          </View>
-          <Text style={styles.statValue}>{data?.attendance?.percentage || 0}%</Text>
+          <Text style={styles.statEmoji}>📋</Text>
+          <Text style={[styles.statValue, { color: COLORS.status.success }]}>{data?.attendance?.percentage || 0}%</Text>
           <Text style={styles.statLabel}>Attendance</Text>
         </View>
-
-        {/* Fees */}
         <View style={styles.statCard}>
-          <View style={[styles.statIconBg, { backgroundColor: '#DBEAFE' }]}>
-            <Icon name="credit-card" size={20} color="#2563EB" />
-          </View>
-          <Text style={[styles.statValue, data?.fees?.pending && data.fees.pending > 0 ? { color: '#DC2626' } : {}]}>
-            {data?.fees?.pending && data.fees.pending > 0 ? 'Pending' : 'Paid'}
+          <Text style={styles.statEmoji}>💰</Text>
+          <Text style={[styles.statValue, data?.fees?.pending && data.fees.pending > 0 ? { color: COLORS.status.error } : {}]}>
+            {data?.fees?.pending && data.fees.pending > 0 ? 'Due' : 'Paid'}
           </Text>
-          <Text style={styles.statLabel}>Fee Status</Text>
+          <Text style={styles.statLabel}>Fees</Text>
         </View>
-
-        {/* Results */}
         <View style={styles.statCard}>
-          <View style={[styles.statIconBg, { backgroundColor: '#EDE9FE' }]}>
-            <Icon name="file-text" size={20} color="#7C3AED" />
-          </View>
+          <Text style={styles.statEmoji}>📝</Text>
           <Text style={styles.statValue}>{data?.recent_results?.length || 0}</Text>
           <Text style={styles.statLabel}>Results</Text>
         </View>
       </View>
 
       {/* Teacher Availability */}
-      <View style={styles.section}>
+      <Card style={styles.section}>
         <Text style={styles.sectionTitle}>Teacher Availability</Text>
-        {teachers.slice(0, 4).map((teacher) => (
-          <View key={teacher.id} style={styles.teacherItem}>
-            <View style={styles.teacherInfo}>
-              <View style={[styles.dot, { backgroundColor: teacher.is_on_leave ? '#EF4444' : '#10B981' }]} />
-              <View>
-                <Text style={styles.teacherName}>{teacher.name}</Text>
-                <Text style={styles.teacherRole}>{teacher.designation}</Text>
+        {teachers.length === 0 ? (
+          <EmptyState title="No teachers found" />
+        ) : (
+          teachers.slice(0, 4).map((teacher) => (
+            <View key={teacher.id} style={styles.teacherItem}>
+              <View style={styles.teacherInfo}>
+                <View style={[styles.statusDot, { backgroundColor: teacher.is_on_leave ? COLORS.status.error : COLORS.status.success }]} />
+                <View>
+                  <Text style={styles.teacherName}>{teacher.name}</Text>
+                  <Text style={styles.teacherRole}>{teacher.designation}</Text>
+                </View>
               </View>
+              <Badge text={teacher.is_on_leave ? 'On Leave' : 'Available'} variant={teacher.is_on_leave ? 'error' : 'success'} />
             </View>
-            <View style={[styles.statusBadge, { backgroundColor: teacher.is_on_leave ? '#FEE2E2' : '#D1FAE5' }]}>
-              <Text style={[styles.statusText, { color: teacher.is_on_leave ? '#DC2626' : '#059669' }]}>
-                {teacher.is_on_leave ? 'On Leave' : 'Available'}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
+          ))
+        )}
+      </Card>
 
       {/* Recent Notices */}
-      <View style={styles.section}>
+      <Card style={styles.section}>
         <Text style={styles.sectionTitle}>Recent Notices</Text>
         {data?.recent_notices && data.recent_notices.length > 0 ? (
-          data.recent_notices.slice(0, 3).map((notice) => (
+          data.recent_notices.map((notice) => (
             <View key={notice.id} style={styles.noticeItem}>
-              <Icon name="bell" size={16} color="#F59E0B" />
+              <Text style={styles.noticeIcon}>📢</Text>
               <View style={styles.noticeContent}>
                 <Text style={styles.noticeTitle}>{notice.title}</Text>
                 <Text style={styles.noticeDesc} numberOfLines={2}>{notice.description}</Text>
@@ -140,15 +135,13 @@ const DashboardScreen: React.FC = () => {
             </View>
           ))
         ) : (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No recent notices</Text>
-          </View>
+          <EmptyState title="No recent notices" />
         )}
-      </View>
+      </Card>
 
       {/* Logout */}
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-        <Icon name="log-out" size={20} color="#EF4444" />
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutIcon}>🚪</Text>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -158,184 +151,161 @@ const DashboardScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: COLORS.background,
   },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  content: {
+    padding: SPACING.lg,
   },
   profileHeader: {
-    backgroundColor: '#D97706',
-    padding: 20,
-    margin: 16,
-    borderRadius: 16,
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: SPACING.lg,
+    marginBottom: SPACING.lg,
   },
   profileIcon: {
     width: 64,
     height: 64,
-    borderRadius: 16,
+    borderRadius: RADIUS.xl,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  profileEmoji: {
+    fontSize: 32,
   },
   profileInfo: {
     flex: 1,
   },
   profileName: {
-    fontSize: 20,
+    fontSize: FONTS.xl,
     fontWeight: 'bold',
-    color: '#fff',
+    color: COLORS.white,
   },
   profileRoll: {
-    fontSize: 14,
+    fontSize: FONTS.sm,
     color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
   },
   badges: {
     flexDirection: 'row',
-    marginTop: 8,
-    gap: 8,
+    marginTop: SPACING.sm,
+    gap: SPACING.sm,
   },
   badge: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: RADIUS.full,
   },
   badgeText: {
-    fontSize: 12,
-    color: '#fff',
+    fontSize: FONTS.xs,
+    color: COLORS.white,
   },
   statsRow: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 12,
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
-  statIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
+  statEmoji: {
+    fontSize: 24,
+    marginBottom: SPACING.xs,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: FONTS.xl,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: COLORS.text.primary,
   },
   statLabel: {
-    fontSize: 11,
-    color: '#6B7280',
+    fontSize: FONTS.xs,
+    color: COLORS.text.secondary,
     marginTop: 2,
   },
   section: {
-    backgroundColor: '#fff',
-    margin: 16,
-    borderRadius: 16,
-    padding: 16,
+    marginBottom: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: FONTS.lg,
     fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 12,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.md,
   },
   teacherItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: COLORS.border,
   },
   teacherInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: SPACING.md,
   },
-  dot: {
+  statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
   },
   teacherName: {
-    fontSize: 14,
+    fontSize: FONTS.md,
     fontWeight: '500',
-    color: '#1F2937',
+    color: COLORS.text.primary,
   },
   teacherRole: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: FONTS.sm,
+    color: COLORS.text.secondary,
   },
   noticeItem: {
     flexDirection: 'row',
-    gap: 10,
-    paddingVertical: 10,
+    gap: SPACING.md,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: COLORS.border,
+  },
+  noticeIcon: {
+    fontSize: 20,
   },
   noticeContent: {
     flex: 1,
   },
   noticeTitle: {
-    fontSize: 14,
+    fontSize: FONTS.md,
     fontWeight: '500',
-    color: '#1F2937',
+    color: COLORS.text.primary,
   },
   noticeDesc: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: FONTS.sm,
+    color: COLORS.text.secondary,
     marginTop: 2,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginHorizontal: 16,
-    marginVertical: 24,
-    padding: 16,
+    gap: SPACING.sm,
     backgroundColor: '#FEE2E2',
-    borderRadius: 12,
+    padding: SPACING.lg,
+    borderRadius: RADIUS.lg,
+    marginBottom: SPACING.xxl,
+  },
+  logoutIcon: {
+    fontSize: 20,
   },
   logoutText: {
-    fontSize: 16,
+    fontSize: FONTS.lg,
     fontWeight: '500',
-    color: '#EF4444',
+    color: COLORS.status.error,
   },
 });
 

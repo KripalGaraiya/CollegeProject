@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { storage, authAPI } from '../services/api';
-import { User, LoginResponse } from '../types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authAPI } from '../services/api';
+import { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
   isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -17,43 +18,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored token and user on app start
-    const token = storage.getString('token');
-    const storedUser = storage.getString('user');
+    checkAuth();
+  }, []);
 
-    if (token && storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
+  const checkAuth = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const storedUser = await AsyncStorage.getItem('user');
+
+      if (token && storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+
         // Verify token is still valid
-        authAPI.getMe()
-          .then((userData) => {
-            setUser(userData);
-            storage.set('user', JSON.stringify(userData));
-          })
-          .catch(() => {
-            storage.delete('token');
-            storage.delete('user');
-            setUser(null);
-          })
-          .finally(() => setLoading(false));
-      } catch {
-        setLoading(false);
+        try {
+          const freshUser = await authAPI.getMe();
+          setUser(freshUser);
+          await AsyncStorage.setItem('user', JSON.stringify(freshUser));
+        } catch (error) {
+          // Token invalid, clear storage
+          await AsyncStorage.removeItem('token');
+          await AsyncStorage.removeItem('user');
+          setUser(null);
+        }
       }
-    } else {
+    } catch (error) {
+      console.error('Auth check error:', error);
+    } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   const login = async (email: string, password: string): Promise<void> => {
     const response = await authAPI.login(email, password);
-    storage.set('token', response.access_token);
-    storage.set('user', JSON.stringify(response.user));
+    await AsyncStorage.setItem('token', response.access_token);
+    await AsyncStorage.setItem('user', JSON.stringify(response.user));
     setUser(response.user);
   };
 
-  const logout = (): void => {
-    storage.delete('token');
-    storage.delete('user');
+  const logout = async (): Promise<void> => {
+    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('user');
     setUser(null);
   };
 
@@ -62,9 +67,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         loading,
+        isAuthenticated: !!user,
         login,
         logout,
-        isAuthenticated: !!user,
       }}
     >
       {children}

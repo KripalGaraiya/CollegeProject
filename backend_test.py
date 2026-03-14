@@ -10,7 +10,7 @@ import json
 from datetime import datetime, timedelta
 
 class CollegeAPITester:
-    def __init__(self, base_url="https://ce7bcee9-03ba-458e-90eb-58661069e4d2.preview.emergentagent.com"):
+    def __init__(self, base_url="https://student-portal-app-10.preview.emergentagent.com"):
         self.base_url = base_url
         self.tokens = {}
         self.users = {}

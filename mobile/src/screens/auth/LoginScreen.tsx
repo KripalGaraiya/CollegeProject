@@ -8,17 +8,20 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   Alert,
+  ScrollView,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
 import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../../components';
+import { COLORS, FONTS, SPACING, RADIUS } from '../../constants';
+import { seedData } from '../../services/api';
 
 const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const { login } = useAuth();
 
   const handleLogin = async () => {
@@ -37,14 +40,26 @@ const LoginScreen: React.FC = () => {
     }
   };
 
-  const fillDemo = (role: 'principal' | 'teacher' | 'student') => {
-    const credentials = {
+  const handleSeedData = async () => {
+    setSeeding(true);
+    try {
+      await seedData();
+      Alert.alert('Success', 'Demo data created! Use the credentials below to login.');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to seed data');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const fillCredentials = (role: 'principal' | 'teacher' | 'student') => {
+    const creds = {
       principal: { email: 'principal@bggaraiya.edu', password: 'principal123' },
       teacher: { email: 'teacher@bggaraiya.edu', password: 'teacher123' },
       student: { email: 'student@bggaraiya.edu', password: 'student123' },
     };
-    setEmail(credentials[role].email);
-    setPassword(credentials[role].password);
+    setEmail(creds[role].email);
+    setPassword(creds[role].password);
   };
 
   return (
@@ -53,75 +68,87 @@ const LoginScreen: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Icon name="award" size={40} color="#fff" />
-          </View>
-          <Text style={styles.collegeName}>Shri B. G. Garaiya</Text>
-          <Text style={styles.collegeSubtitle}>Homoeopathic Medical College</Text>
-          <Text style={styles.collegeLocation}>& Hospital, Rajkot</Text>
-        </View>
-
-        {/* Login Form */}
-        <View style={styles.formContainer}>
-          <Text style={styles.welcomeText}>Welcome Back</Text>
-          <Text style={styles.subtitleText}>Sign in to your account</Text>
-
-          <View style={styles.inputContainer}>
-            <Icon name="mail" size={20} color="#9CA3AF" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              placeholderTextColor="#9CA3AF"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Logo Section */}
+          <View style={styles.logoSection}>
+            <View style={styles.logoIcon}>
+              <Text style={styles.logoEmoji}>🎓</Text>
+            </View>
+            <Text style={styles.collegeName}>Shri B. G. Garaiya</Text>
+            <Text style={styles.collegeSubtitle}>Homoeopathic Medical College</Text>
+            <Text style={styles.collegeLocation}>& Hospital, Rajkot</Text>
           </View>
 
-          <View style={styles.inputContainer}>
-            <Icon name="lock" size={20} color="#9CA3AF" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor="#9CA3AF"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#9CA3AF" />
-            </TouchableOpacity>
-          </View>
+          {/* Login Form */}
+          <View style={styles.formSection}>
+            <Text style={styles.welcomeText}>Welcome Back</Text>
+            <Text style={styles.subtitleText}>Sign in to your account</Text>
 
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.loginButtonText}>Sign In</Text>
-            )}
-          </TouchableOpacity>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputIcon}>✉️</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor={COLORS.text.muted}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
 
-          {/* Demo Credentials */}
-          <View style={styles.demoContainer}>
-            <Text style={styles.demoTitle}>Demo Credentials</Text>
-            <TouchableOpacity style={styles.demoButton} onPress={() => fillDemo('principal')}>
-              <Text style={styles.demoButtonText}>Principal</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.demoButton} onPress={() => fillDemo('teacher')}>
-              <Text style={styles.demoButtonText}>Teacher</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.demoButton} onPress={() => fillDemo('student')}>
-              <Text style={styles.demoButtonText}>Student</Text>
-            </TouchableOpacity>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputIcon}>🔒</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your password"
+                  placeholderTextColor={COLORS.text.muted}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <Button title="Sign In" onPress={handleLogin} loading={loading} style={styles.loginButton} />
+
+            {/* Demo Credentials */}
+            <View style={styles.demoSection}>
+              <Text style={styles.demoTitle}>Demo Credentials</Text>
+
+              <TouchableOpacity style={styles.demoItem} onPress={() => fillCredentials('principal')}>
+                <Text style={styles.demoRole}>Principal</Text>
+                <Text style={styles.demoCreds}>principal@bggaraiya.edu / principal123</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.demoItem} onPress={() => fillCredentials('teacher')}>
+                <Text style={styles.demoRole}>Teacher</Text>
+                <Text style={styles.demoCreds}>teacher@bggaraiya.edu / teacher123</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.demoItem} onPress={() => fillCredentials('student')}>
+                <Text style={styles.demoRole}>Student</Text>
+                <Text style={styles.demoCreds}>student@bggaraiya.edu / student123</Text>
+              </TouchableOpacity>
+
+              <Button
+                title={seeding ? 'Creating...' : 'Initialize Demo Data'}
+                onPress={handleSeedData}
+                variant="outline"
+                loading={seeding}
+                style={styles.seedButton}
+              />
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -130,116 +157,135 @@ const LoginScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4A6C58',
+    backgroundColor: COLORS.primary,
   },
   keyboardView: {
     flex: 1,
   },
-  logoContainer: {
-    flex: 0.4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
+  scrollContent: {
+    flexGrow: 1,
   },
-  logoCircle: {
+  logoSection: {
+    paddingVertical: SPACING.xxxl,
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  logoIcon: {
     width: 80,
     height: 80,
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
+  },
+  logoEmoji: {
+    fontSize: 40,
   },
   collegeName: {
-    fontSize: 28,
+    fontSize: FONTS.xxxl,
     fontWeight: 'bold',
-    color: '#fff',
+    color: COLORS.white,
     textAlign: 'center',
   },
   collegeSubtitle: {
-    fontSize: 18,
-    color: '#fff',
+    fontSize: FONTS.xl,
+    color: COLORS.white,
     textAlign: 'center',
+    marginTop: SPACING.xs,
   },
   collegeLocation: {
-    fontSize: 14,
+    fontSize: FONTS.md,
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: SPACING.xs,
   },
-  formContainer: {
-    flex: 0.6,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 24,
-    paddingTop: 32,
+  formSection: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: RADIUS.xxxl,
+    borderTopRightRadius: RADIUS.xxxl,
+    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.xxl,
+    paddingBottom: SPACING.xl,
   },
   welcomeText: {
-    fontSize: 24,
+    fontSize: FONTS.xxl,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: COLORS.text.primary,
     textAlign: 'center',
   },
   subtitleText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: FONTS.md,
+    color: COLORS.text.secondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: SPACING.xl,
+  },
+  inputGroup: {
+    marginBottom: SPACING.lg,
+  },
+  inputLabel: {
+    fontSize: FONTS.sm,
+    fontWeight: '500',
+    color: COLORS.text.primary,
+    marginBottom: SPACING.sm,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    backgroundColor: COLORS.background,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.lg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: COLORS.border,
   },
   inputIcon: {
-    marginRight: 12,
+    fontSize: 18,
+    marginRight: SPACING.md,
   },
   input: {
     flex: 1,
     height: 50,
-    fontSize: 16,
-    color: '#1F2937',
+    fontSize: FONTS.lg,
+    color: COLORS.text.primary,
+  },
+  eyeIcon: {
+    fontSize: 18,
   },
   loginButton: {
-    backgroundColor: '#4A6C58',
-    borderRadius: 12,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
+    marginTop: SPACING.md,
   },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  demoContainer: {
-    marginTop: 24,
-    alignItems: 'center',
+  demoSection: {
+    marginTop: SPACING.xxl,
+    paddingTop: SPACING.xl,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
   demoTitle: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 12,
+    fontSize: FONTS.sm,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
+    marginBottom: SPACING.md,
   },
-  demoButton: {
-    backgroundColor: '#F3F4F6',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-    width: '100%',
-    alignItems: 'center',
+  demoItem: {
+    backgroundColor: COLORS.background,
+    padding: SPACING.md,
+    borderRadius: RADIUS.lg,
+    marginBottom: SPACING.sm,
   },
-  demoButtonText: {
-    fontSize: 14,
-    color: '#4B5563',
+  demoRole: {
+    fontSize: FONTS.md,
+    fontWeight: '600',
+    color: COLORS.text.primary,
+  },
+  demoCreds: {
+    fontSize: FONTS.xs,
+    color: COLORS.text.muted,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    marginTop: 2,
+  },
+  seedButton: {
+    marginTop: SPACING.md,
   },
 });
 

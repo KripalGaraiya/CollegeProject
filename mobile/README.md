@@ -1,84 +1,122 @@
-# College Management Mobile App
+# College Management System - React Native CLI App
 
-## React Native CLI Project Structure
+**Shri B. G. Garaiya Homoeopathic Medical College & Hospital, Rajkot**
 
-This is the mobile application for Shri B. G. Garaiya Homoeopathic Medical College Management System.
-
-## Tech Stack
-- React Native CLI
-- TypeScript
-- React Navigation (Native Stack + Bottom Tabs)
-- Redux Toolkit (State Management)
-- React Query (Server State)
-- Firebase Cloud Messaging (Push Notifications)
-- Axios (API calls)
+A complete mobile application built with React Native CLI for managing students, teachers, attendance, results, fees, notices, and leaves.
 
 ## Prerequisites
-- Node.js 18+
-- JDK 17 (for Android)
-- Xcode 15+ (for iOS)
-- Android Studio with SDK 34
 
-## Setup Instructions
+- Node.js >= 18
+- React Native CLI (`npm install -g react-native`)
+- For Android: Android Studio with SDK 33+, JDK 17
+- For iOS: Xcode 15+, CocoaPods
 
-### 1. Install dependencies
+## Setup
+
 ```bash
+# 1. Navigate to project
 cd mobile
-npm install
-```
 
-### 2. iOS Setup
-```bash
+# 2. Install dependencies
+yarn install
+
+# 3. For iOS only - install pods
 cd ios && pod install && cd ..
-npx react-native run-ios
+
+# 4. Update API URL (if needed)
+# Edit src/constants/index.ts and set API_BASE_URL to your backend URL
+
+# 5. Run the app
+yarn android   # For Android
+yarn ios       # For iOS
 ```
 
-### 3. Android Setup
-```bash
-npx react-native run-android
-```
+## Backend API
 
-### 4. Firebase Setup
-1. Create a Firebase project at https://console.firebase.google.com
-2. Download `google-services.json` for Android → place in `android/app/`
-3. Download `GoogleService-Info.plist` for iOS → add to Xcode project
-4. Enable Cloud Messaging in Firebase Console
+The app connects to a FastAPI backend. Make sure the backend is running before using the app.
 
-## Project Structure
-```
-mobile/
-├── src/
-│   ├── screens/
-│   │   ├── auth/           # Login, Role Selection
-│   │   ├── principal/      # Principal Dashboard & Features
-│   │   ├── teacher/        # Teacher Dashboard & Features
-│   │   └── student/        # Student Dashboard & Features
-│   ├── components/         # Reusable UI Components
-│   ├── navigation/         # React Navigation Setup
-│   ├── services/           # API Services
-│   ├── contexts/           # React Contexts
-│   ├── hooks/              # Custom Hooks
-│   └── types/              # TypeScript Types
-├── android/                # Android native code
-├── ios/                    # iOS native code
-└── package.json
-```
+**Default API URL**: `https://student-portal-app-10.preview.emergentagent.com`
 
-## API Configuration
-Update the API base URL in `src/services/api.ts`:
+To change the API URL, edit `src/constants/index.ts`:
 ```typescript
-const API_BASE_URL = 'https://your-backend-url.com';
+export const API_BASE_URL = 'YOUR_BACKEND_URL';
 ```
 
 ## Demo Credentials
-- Principal: principal@bggaraiya.edu / principal123
-- Teacher: teacher@bggaraiya.edu / teacher123
-- Student: student@bggaraiya.edu / student123
 
-## Features
-- Role-based Authentication (JWT)
-- Principal Dashboard (Manage Students, Teachers, Departments)
-- Teacher Dashboard (Attendance, Results, Leave)
-- Student Dashboard (View Attendance, Fees, Results, Notices)
-- Push Notifications (FCM)
-- Offline Support (MMKV Storage)
+| Role      | Email                       | Password     |
+|-----------|-----------------------------|--------------|
+| Principal | principal@bggaraiya.edu     | principal123 |
+| Teacher   | teacher@bggaraiya.edu       | teacher123   |
+| Student   | student@bggaraiya.edu       | student123   |
+
+**First Login**: Tap "Initialize Demo Data" on the login screen to seed the database.
+
+## App Structure
+
+```
+src/
+├── App.tsx                    # App entry point
+├── components/index.tsx       # Reusable UI components
+├── constants/index.ts         # Colors, fonts, spacing, API URL
+├── contexts/AuthContext.tsx    # JWT authentication context
+├── navigation/
+│   └── AppNavigator.tsx       # Role-based navigation
+├── screens/
+│   ├── auth/LoginScreen.tsx
+│   ├── principal/             # Principal screens (6 tabs)
+│   │   ├── DashboardScreen.tsx
+│   │   ├── StudentsScreen.tsx
+│   │   ├── TeachersScreen.tsx
+│   │   ├── DepartmentsScreen.tsx
+│   │   ├── NoticesScreen.tsx
+│   │   └── LeavesScreen.tsx
+│   ├── teacher/               # Teacher screens (4 tabs)
+│   │   ├── DashboardScreen.tsx
+│   │   ├── AttendanceScreen.tsx
+│   │   ├── ResultsScreen.tsx
+│   │   └── LeaveScreen.tsx
+│   └── student/               # Student screens (5 tabs)
+│       ├── DashboardScreen.tsx
+│       ├── AttendanceScreen.tsx
+│       ├── FeesScreen.tsx
+│       ├── ResultsScreen.tsx
+│       └── NoticesScreen.tsx
+├── services/api.ts            # Axios API client
+└── types/index.ts             # TypeScript interfaces
+```
+
+## Features by Role
+
+### Principal
+- Dashboard with statistics (students, teachers, fees, leaves)
+- Student management (add, view, search, delete, pagination)
+- Teacher management with availability tracking
+- Department management (grid view)
+- Notice board (create, delete, target audience)
+- Leave request approval/rejection with filters
+
+### Teacher
+- Dashboard with assigned classes and recent notices
+- Mark attendance (individual/bulk, per class)
+- Upload student results (auto-grading)
+- Apply for leave (sick, casual, emergency)
+
+### Student
+- Profile dashboard with attendance %, fee status
+- Attendance history with progress visualization
+- Fee breakdown with payment progress
+- Results with subject-wise grades and overall performance
+- Notice board
+
+## Tech Stack
+
+- React Native 0.73.2 (CLI)
+- TypeScript
+- React Navigation 6 (Native Stack + Bottom Tabs)
+- Axios (HTTP client)
+- AsyncStorage (Token persistence)
+- react-native-gesture-handler
+- react-native-screens
+- react-native-safe-area-context
+- react-native-vector-icons

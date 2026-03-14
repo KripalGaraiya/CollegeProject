@@ -1,3 +1,4 @@
+// User Types
 export interface User {
   id: string;
   email: string;
@@ -8,6 +9,13 @@ export interface User {
   created_at: string;
 }
 
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+// Student Types
 export interface Student {
   id: string;
   user_id: string;
@@ -26,6 +34,7 @@ export interface Student {
   photo_url?: string;
 }
 
+// Teacher Types
 export interface Teacher {
   id: string;
   user_id: string;
@@ -44,6 +53,7 @@ export interface Teacher {
   leave_reason?: string;
 }
 
+// Department Types
 export interface Department {
   id: string;
   name: string;
@@ -52,6 +62,7 @@ export interface Department {
   head_teacher_id?: string;
 }
 
+// Class Types
 export interface Class {
   id: string;
   name: string;
@@ -60,6 +71,7 @@ export interface Class {
   section: string;
 }
 
+// Attendance Types
 export interface Attendance {
   id: string;
   student_id: string;
@@ -69,6 +81,15 @@ export interface Attendance {
   marked_by: string;
 }
 
+export interface AttendanceStats {
+  total_days: number;
+  present: number;
+  absent: number;
+  leave: number;
+  percentage: number;
+}
+
+// Result Types
 export interface Result {
   id: string;
   student_id: string;
@@ -81,6 +102,7 @@ export interface Result {
   percentage: number;
 }
 
+// Fee Types
 export interface Fee {
   id: string;
   student_id: string;
@@ -92,6 +114,7 @@ export interface Fee {
   status: 'pending' | 'partial' | 'paid';
 }
 
+// Notice Types
 export interface Notice {
   id: string;
   title: string;
@@ -104,6 +127,7 @@ export interface Notice {
   created_at: string;
 }
 
+// Leave Types
 export interface Leave {
   id: string;
   user_id: string;
@@ -115,12 +139,7 @@ export interface Leave {
   status: 'pending' | 'approved' | 'rejected';
 }
 
-export interface LoginResponse {
-  access_token: string;
-  token_type: string;
-  user: User;
-}
-
+// Dashboard Types
 export interface PrincipalDashboard {
   total_students: number;
   total_teachers: number;
@@ -130,6 +149,13 @@ export interface PrincipalDashboard {
   students_present_today: number;
   pending_fees_amount: number;
   pending_leave_requests: number;
+}
+
+export interface TeacherDashboard {
+  teacher: Teacher;
+  assigned_classes: Class[];
+  pending_leaves: Leave[];
+  recent_notices: Notice[];
 }
 
 export interface StudentDashboard {
@@ -148,9 +174,35 @@ export interface StudentDashboard {
   recent_notices: Notice[];
 }
 
-export interface TeacherDashboard {
-  teacher: Teacher;
-  assigned_classes: Class[];
-  pending_leaves: Leave[];
-  recent_notices: Notice[];
-}
+// Navigation Types
+export type RootStackParamList = {
+  Login: undefined;
+  PrincipalTabs: undefined;
+  TeacherTabs: undefined;
+  StudentTabs: undefined;
+  StudentProfile: { studentId: string };
+};
+
+export type PrincipalTabParamList = {
+  Dashboard: undefined;
+  Students: undefined;
+  Teachers: undefined;
+  Departments: undefined;
+  Notices: undefined;
+  Leaves: undefined;
+};
+
+export type TeacherTabParamList = {
+  Dashboard: undefined;
+  Attendance: undefined;
+  Results: undefined;
+  Leave: undefined;
+};
+
+export type StudentTabParamList = {
+  Dashboard: undefined;
+  Attendance: undefined;
+  Fees: undefined;
+  Results: undefined;
+  Notices: undefined;
+};
